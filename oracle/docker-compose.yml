@@ -1,0 +1,26 @@
+services:
+  oracle-db:
+    image: container-registry.oracle.com/database/free:latest-lite
+    container_name: oracle-db
+    networks:
+      postgres_net:
+    ports:
+      - "1521:1521"
+    env_file:
+      - ../.env
+    environment:
+      ORACLE_PWD: ${ORACLE_PASSWORD}
+      ORACLE_PDB: ${ORACLE_PDB}
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - oracle-data:/opt/oracle/backup
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/1521'"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+
+networks:
+  postgres_net:
+    driver: bridge

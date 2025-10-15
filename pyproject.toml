@@ -1,0 +1,20 @@
+[project]
+name = "bdd-project"
+version = "0.1.0"
+description = "Festival DB comparison: Oracle vs PostgreSQL"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "sqlalchemy>=2.0.44",
+    "psycopg[binary]>=3.2.3",
+    "oracledb>=2.5.0",
+    "python-dotenv>=1.0.1",
+    "dotenv>=0.9.9",
+    "psycopg2-binary>=2.9.11",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "ruff>=0.14.0",
+]

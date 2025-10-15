@@ -1,0 +1,21 @@
+services:
+  oracle-db:
+    extends:
+      file: oracle/docker-compose.yml
+      service: oracle-db
+  postgres-db:
+    extends:
+      file: postgres/docker-compose.yml
+      service: postgres-db
+  adminer:
+    extends:
+      file: adminer/docker-compose.yml
+      service: adminer
+
+volumes:
+  oracle-data:
+  postgres-data:
+
+networks:
+  postgres_net:
+    driver: bridge

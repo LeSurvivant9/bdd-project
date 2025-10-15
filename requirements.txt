@@ -1,0 +1,15 @@
+cffi==2.0.0
+cryptography==46.0.2
+dotenv==0.9.9
+mypy==1.18.2
+mypy-extensions==1.1.0
+oracledb==3.4.0
+pathspec==0.12.1
+psycopg==3.2.10
+psycopg-binary==3.2.10
+psycopg2-binary==2.9.11
+pycparser==2.23
+python-dotenv==1.1.1
+ruff==0.14.0
+sqlalchemy==2.0.44
+typing-extensions==4.15.0
