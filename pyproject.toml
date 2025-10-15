@@ -19,3 +19,20 @@ dev = [
     "pre-commit>=4.3.0",
     "ruff>=0.14.0",
 ]
+
+
+[tool.ruff]
+# Configure Ruff (linter + import sorter). The formatter is run via pre-commit.
+# target-version can help rule applicability; adjust if needed.
+target-version = "py310"
+
+[tool.ruff.lint]
+# Enable core checks and import sorting (isort-compatible).
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+# Treat local packages as first-party to group imports correctly.
+known-first-party = ["db"]
+# Merge multiple "as" imports from the same module.
+combine-as-imports = true

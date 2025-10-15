@@ -64,7 +64,6 @@ class Concert(Base):
     id_concert: Mapped[int] = mapped_column("id_concert", Integer, primary_key=True)
     date_concert: Mapped[Optional[Date]] = mapped_column("date_concert", Date)
     heure_debut: Mapped[Optional[DateTime]] = mapped_column("heure_debut", DateTime)
-    # Oracle n'a pas de type Interval identique; SQLAlchemy mappe à INTERVAL / INTERVAL DAY TO SECOND
     duree: Mapped[Optional[Interval]] = mapped_column(Interval, nullable=True)
 
     id_scene: Mapped[int] = mapped_column(
