@@ -1,3 +1,4 @@
+---
 services:
   adminer:
     platform: linux/amd64
@@ -14,7 +15,6 @@ services:
       ADMINER_DEFAULT_SERVER: postgres-db
     volumes:
       - ./tns:/opt/oracle/instantclient_23_9/network/admin:ro
-
 networks:
   postgres_net:
     driver: bridge

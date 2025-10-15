@@ -1,0 +1,23 @@
+---
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      # Run the linter. Use --fix to automatically fix issues where possible.
+      - id: ruff-check
+        types_or: [python, pyi]
+        args: [--fix]
+      # Run the formatter.
+      - id: ruff-format
+        types_or: [python, pyi]
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.18.0
+    hooks:
+      - id: yamlfmt
+        files: \.(yaml|yml)$
+        args:
+          - -conf
+          - yamlfmt.yml
+          - -gitignore_excludes
+          - -v
+        # vous pouvez ajouter un fichier .yamlfmt pour configurer (indentation, style, etc.)

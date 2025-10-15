@@ -1,0 +1,5 @@
+---
+formatter:
+  type: basic
+  include_document_start: true
+  trim_trailing_whitespace: true
