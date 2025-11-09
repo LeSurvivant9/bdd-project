@@ -6,6 +6,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    Identity,
     Integer,
     Interval,
     MetaData,
@@ -32,7 +33,9 @@ class Base(DeclarativeBase):
 class Groupe(Base):
     __tablename__ = "groupe"
 
-    id_groupe: Mapped[int] = mapped_column("id_groupe", Integer, primary_key=True)
+    id_groupe: Mapped[int] = mapped_column(
+        "id_groupe", Integer, Identity(), primary_key=True
+    )
     nom_groupe: Mapped[str] = mapped_column("nom_groupe", String(255), nullable=False)
     style: Mapped[Optional[str]] = mapped_column(String(100))
     pays_origine: Mapped[Optional[str]] = mapped_column("pays_origine", String(100))
@@ -40,31 +43,32 @@ class Groupe(Base):
 
     concerts: Mapped[list[Concert]] = relationship(back_populates="groupe")
 
-
 # Scene (IdScene, NomScene, Emplacement, Capacite)
 
 
 class Scene(Base):
     __tablename__ = "scene"
 
-    id_scene: Mapped[int] = mapped_column("id_scene", Integer, primary_key=True)
+    id_scene: Mapped[int] = mapped_column(
+        "id_scene", Integer, Identity(), primary_key=True
+    )
     nom_scene: Mapped[str] = mapped_column("nom_scene", String(255), nullable=False)
     emplacement: Mapped[Optional[str]] = mapped_column(String(255))
     capacite: Mapped[Optional[int]] = mapped_column(Integer)
 
     concerts: Mapped[list[Concert]] = relationship(back_populates="scene")
 
-
-# Concert (IdConcert, DateConcert, HeureDebut, Duree, #IdScene, #IdGroupe)
-
-
 class Concert(Base):
     __tablename__ = "concert"
 
-    id_concert: Mapped[int] = mapped_column("id_concert", Integer, primary_key=True)
+    id_concert: Mapped[int] = mapped_column(
+        "id_concert", Integer, Identity(), primary_key=True
+    )
     date_concert: Mapped[Optional[Date]] = mapped_column("date_concert", Date)
     heure_debut: Mapped[Optional[DateTime]] = mapped_column("heure_debut", DateTime)
     duree: Mapped[Optional[Interval]] = mapped_column(Interval, nullable=True)
+# ... le reste de la classe Concert ne change pas ...
+# ... (les clés étrangères id_scene et id_groupe restent les mêmes) ...
 
     id_scene: Mapped[int] = mapped_column(
         "id_scene",
@@ -84,21 +88,6 @@ class Concert(Base):
     affectations: Mapped[list[Affectation]] = relationship(back_populates="concert")
     sponsorings: Mapped[list[Sponsoring]] = relationship(back_populates="concert")
 
-
-# Benevole (IdBenevole, Nom, Prenom, Telephone, Email, Poste)
-
-
-class Benevole(Base):
-    __tablename__ = "benevole"
-
-    id_benevole: Mapped[int] = mapped_column("id_benevole", Integer, primary_key=True)
-    nom: Mapped[str] = mapped_column(String(100), nullable=False)
-    prenom: Mapped[str] = mapped_column(String(100), nullable=False)
-    telephone: Mapped[Optional[str]] = mapped_column(String(50))
-    email: Mapped[Optional[str]] = mapped_column(String(255))
-    poste: Mapped[Optional[str]] = mapped_column(String(100))
-
-    affectations: Mapped[list[Affectation]] = relationship(back_populates="benevole")
 
 
 # Affectation (#IdBenevole, #IdConcert, Role)
@@ -128,11 +117,26 @@ class Affectation(Base):
 # Partenaire (IdPartenaire, NomPartenaire, TypePartenaire)
 
 
+class Benevole(Base):
+    __tablename__ = "benevole"
+
+    id_benevole: Mapped[int] = mapped_column(
+        "id_benevole", Integer, Identity(), primary_key=True
+    )
+    nom: Mapped[str] = mapped_column(String(100), nullable=False)
+    prenom: Mapped[str] = mapped_column(String(100), nullable=False)
+    telephone: Mapped[Optional[str]] = mapped_column(String(50))
+    email: Mapped[Optional[str]] = mapped_column(String(255))
+    poste: Mapped[Optional[str]] = mapped_column(String(100))
+
+    affectations: Mapped[list[Affectation]] = relationship(back_populates="benevole")
+
+
 class Partenaire(Base):
     __tablename__ = "partenaire"
 
     id_partenaire: Mapped[int] = mapped_column(
-        "id_partenaire", Integer, primary_key=True
+        "id_partenaire", Integer, Identity(), primary_key=True
     )
     nom_partenaire: Mapped[str] = mapped_column(
         "nom_partenaire", String(255), nullable=False
@@ -142,8 +146,6 @@ class Partenaire(Base):
     )
 
     sponsorings: Mapped[list[Sponsoring]] = relationship(back_populates="partenaire")
-
-
 # Sponsoring (#IdPartenaire, #IdConcert, Montant)
 
 
