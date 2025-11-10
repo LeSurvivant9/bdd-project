@@ -1,23 +1,21 @@
-# populate.py
 import datetime
 import random
 import sys
+
+from dotenv import load_dotenv
 from faker import Faker
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 
 from db import OracleManager, PostgresManager
 from db.models import (
-    Base,
-    Groupe,
-    Scene,
-    Concert,
-    Benevole,
     Affectation,
+    Benevole,
+    Concert,
+    Groupe,
     Partenaire,
+    Scene,
     Sponsoring,
 )
-
 
 TOTAL_GROUPES = 500
 TOTAL_SCENES = 50
@@ -30,7 +28,16 @@ TOTAL_SPONSORINGS = 1000
 fake = Faker("fr_FR")
 
 
-STYLES_MUSIQUE = ["Rock", "Pop", "Electro", "Jazz", "Métal", "Classique", "Hip-Hop", "Reggae"]
+STYLES_MUSIQUE = [
+    "Rock",
+    "Pop",
+    "Electro",
+    "Jazz",
+    "Métal",
+    "Classique",
+    "Hip-Hop",
+    "Reggae",
+]
 ROLES_BENEVOLE = ["Bar", "Accueil", "Sécurité", "Technique", "Catering", "VIP"]
 TYPES_PARTENAIRE = ["Média", "Financier", "Boisson", "Matériel"]
 POSTES_BENEVOLE = ["Manager", "Membre équipe", "Stagiaire", "Superviseur"]
@@ -53,12 +60,8 @@ def clear_data(session_maker):
 
 
 def populate_data(session_maker, engine_name: str):
-
-
     print(f"Début du peuplement pour {engine_name}...")
     with session_maker() as session:
-
-
         print(f"  Génération de {TOTAL_GROUPES} groupes...")
         groupes = []
         for _ in range(TOTAL_GROUPES):
@@ -149,9 +152,7 @@ def populate_data(session_maker, engine_name: str):
 
         affectations = [
             Affectation(
-                id_benevole=b_id,
-                id_concert=c_id,
-                role=random.choice(ROLES_BENEVOLE)
+                id_benevole=b_id, id_concert=c_id, role=random.choice(ROLES_BENEVOLE)
             )
             for b_id, c_id in affectations_set
         ]
@@ -172,7 +173,7 @@ def populate_data(session_maker, engine_name: str):
             Sponsoring(
                 id_partenaire=p_id,
                 id_concert=c_id,
-                montant=random.choice([500, 1000, 5000, 10000])
+                montant=random.choice([500, 1000, 5000, 10000]),
             )
             for p_id, c_id in sponsorings_set
         ]

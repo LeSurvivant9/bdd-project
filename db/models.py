@@ -29,8 +29,11 @@ class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=naming_convention)
 
 
-# Groupe (IdGroupe, NomGroupe, Style, PaysOrigine, NbMembres)
 class Groupe(Base):
+    """
+    Represents a musical group with attributes such as name, style, origin country, and member count.
+    """
+
     __tablename__ = "groupe"
 
     id_groupe: Mapped[int] = mapped_column(
@@ -43,10 +46,12 @@ class Groupe(Base):
 
     concerts: Mapped[list[Concert]] = relationship(back_populates="groupe")
 
-# Scene (IdScene, NomScene, Emplacement, Capacite)
-
 
 class Scene(Base):
+    """
+    Represents a concert venue with attributes such as name, location, and capacity.
+    """
+
     __tablename__ = "scene"
 
     id_scene: Mapped[int] = mapped_column(
@@ -58,7 +63,12 @@ class Scene(Base):
 
     concerts: Mapped[list[Concert]] = relationship(back_populates="scene")
 
+
 class Concert(Base):
+    """
+    Represents a concert event with attributes such as date, start time, duration, venue, and associated group.
+    """
+
     __tablename__ = "concert"
 
     id_concert: Mapped[int] = mapped_column(
@@ -67,8 +77,6 @@ class Concert(Base):
     date_concert: Mapped[Optional[Date]] = mapped_column("date_concert", Date)
     heure_debut: Mapped[Optional[DateTime]] = mapped_column("heure_debut", DateTime)
     duree: Mapped[Optional[Interval]] = mapped_column(Interval, nullable=True)
-# ... le reste de la classe Concert ne change pas ...
-# ... (les clés étrangères id_scene et id_groupe restent les mêmes) ...
 
     id_scene: Mapped[int] = mapped_column(
         "id_scene",
@@ -89,11 +97,11 @@ class Concert(Base):
     sponsorings: Mapped[list[Sponsoring]] = relationship(back_populates="concert")
 
 
-
-# Affectation (#IdBenevole, #IdConcert, Role)
-
-
 class Affectation(Base):
+    """
+    Represents an assignment of a benevole to a concert with a specific role.
+    """
+
     __tablename__ = "affectation"
 
     id_benevole: Mapped[int] = mapped_column(
@@ -114,10 +122,11 @@ class Affectation(Base):
     concert: Mapped[Concert] = relationship(back_populates="affectations")
 
 
-# Partenaire (IdPartenaire, NomPartenaire, TypePartenaire)
-
-
 class Benevole(Base):
+    """
+    Represents a benevole with attributes such as name, phone, email, and position.
+    """
+
     __tablename__ = "benevole"
 
     id_benevole: Mapped[int] = mapped_column(
@@ -133,6 +142,10 @@ class Benevole(Base):
 
 
 class Partenaire(Base):
+    """
+    Represents a sponsor with attributes such as name and type.
+    """
+
     __tablename__ = "partenaire"
 
     id_partenaire: Mapped[int] = mapped_column(
@@ -146,10 +159,13 @@ class Partenaire(Base):
     )
 
     sponsorings: Mapped[list[Sponsoring]] = relationship(back_populates="partenaire")
-# Sponsoring (#IdPartenaire, #IdConcert, Montant)
 
 
 class Sponsoring(Base):
+    """
+    Represents a sponsorship relationship between a sponsor and a concert with an associated amount.
+    """
+
     __tablename__ = "sponsoring"
 
     id_partenaire: Mapped[int] = mapped_column(

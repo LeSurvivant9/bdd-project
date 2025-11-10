@@ -4,8 +4,16 @@ FROM adminer:latest
 # Le conteneur Adminer officiel peut utiliser un utilisateur non-root par défaut.
 # On passe en root pour installer les paquets avec apk, puis on peut rester root (minimal change)
 USER root
-RUN apk add --no-cache libaio libnsl libc6-compat curl unzip ca-certificates $PHPIZE_DEPS \
- && ln -s /lib/libc.so.6 /usr/lib/libresolv.so.2 || true
+RUN set -eux; \
+    if command -v apk >/dev/null 2>&1; then \
+        apk add --no-cache curl unzip ca-certificates libaio libnsl libc6-compat; \
+    elif command -v apt-get >/dev/null 2>&1; then \
+        apt-get update; \
+        apt-get install -y --no-install-recommends curl unzip ca-certificates libaio1 libnsl-dev libc6; \
+        rm -rf /var/lib/apt/lists/*; \
+    else \
+        echo "Unsupported base image: no apk or apt-get found"; exit 1; \
+    fi
 
 # Téléchargement automatique des archives Oracle Instant Client
 # Vous pouvez surcharger ces URLs via --build-arg IC_BASIC_URL=... et IC_SDK_URL=...

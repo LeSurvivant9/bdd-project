@@ -123,7 +123,7 @@ class OracleManager(BaseDBManager):
         password = os.getenv("ORACLE_PASSWORD", "password")
         host = os.getenv("ORACLE_HOST", "localhost")
         port = int(os.getenv("ORACLE_PORT", "1521"))
-        service_name = os.getenv("ORACLE_PDB", "ORACLE_DB")
+        service_name = os.getenv("ORACLE_PDB", "FREEPDB1")
         url = URL.create(
             drivername="oracle+oracledb",
             username=user,
