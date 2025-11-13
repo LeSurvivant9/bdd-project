@@ -47,7 +47,7 @@ python-dotenv).
 # Identifiants Oracle utilisés par Adminer et le script Python
 ORACLE_USERNAME=PDBADMIN
 ORACLE_PASSWORD=password
-ORACLE_PDB=ORACLE_DB
+ORACLE_PDB=FREEPDB1
 
 # Identifiants PostgreSQL
 POSTGRES_USER=postgres
@@ -127,6 +127,64 @@ la persistance des mots de passe dans les volumes).
 
 ---
 
+## Exécuter vos scripts SQL (dossier `requests/`)
+
+Deux façons d’exécuter automatiquement vos requêtes SQL (une requête par fichier `.sql`) et d’afficher le plan
+d’exécution pour PostgreSQL et Oracle:
+
+1) Workflow complet (réinitialisation du schéma + peuplement + exécution des requêtes):
+
+```
+uv run main.py
+```
+
+Ce script:
+- initialise/verify les schémas sur PostgreSQL et Oracle,
+- peuple la base avec des données de test,
+- puis lit et exécute chaque fichier `*.sql` dans `requests/` en affichant un aperçu des résultats et les plans
+  d’exécution des deux SGBD.
+
+2) Itérer sur les requêtes sans réinitialiser les données (ne touche pas au schéma ni aux données):
+
+```
+uv run scripts/execute_requests.py
+```
+
+Conseils:
+- Placez vos requêtes dans le dossier `requests/` à la racine (ex.: `requests/01_count_groupes.sql`).
+- Une seule requête par fichier.
+- Les résultats et plans d’exécution sont affichés séparément pour PostgreSQL puis Oracle.
+
+---
+
+## Initialisation Oracle après démarrage (recommandé)
+
+Après avoir démarré les conteneurs (`docker compose up -d`), exécutez le script d’initialisation Oracle pour éviter des
+erreurs liées aux tablespaces/quotas et privilèges (ex.: ORA-01950, ORA-01031) et pour préparer l’utilisateur
+applicatif:
+
+```
+# À lancer dans un terminal compatible bash (macOS/Linux, WSL ou Git Bash sur Windows)
+bash scripts/init_oracle.sh
+```
+
+Ce script:
+- détecte automatiquement un PDB valide (par défaut `FREEPDB1`),
+- crée l’utilisateur s’il n’existe pas (`ORACLE_USERNAME`, par défaut `PDBADMIN`),
+- assigne un tablespace par défaut (`USERS` si présent, sinon crée `APPDATA`) et une quota illimitée,
+- accorde les privilèges de base (CREATE SESSION/TABLE/SEQUENCE/VIEW/PROCEDURE),
+- et migre d’éventuels objets depuis `SYSTEM` vers le tablespace cible.
+
+Pré‑requis:
+- le conteneur `oracle-db` doit être démarré et accessible,
+- le fichier `.env` doit être renseigné (au minimum `ORACLE_PASSWORD`).
+
+Astuce:
+- Si vous êtes sous Windows PowerShell, exécutez ce script via WSL ou Git Bash. En cas d’erreur « Permission denied »,
+  rendez le script exécutable: `chmod +x scripts/init_oracle.sh` puis relancez la commande ci‑dessus.
+
+---
+
 ## Utiliser Adminer pour inspecter les tables et exécuter des requêtes
 
 - Ouvrez http://localhost:8080
@@ -141,7 +199,7 @@ la persistance des mots de passe dans les volumes).
     - Server: oracle-db (ou un alias TNS, voir plus bas)
     - Username: PDBADMIN (ou votre utilisateur applicatif)
     - Password: ORACLE_PASSWORD
-    - Database: ORACLE_PDB (ex.: ORACLE_DB)
+    - Database: ORACLE_PDB (ex.: FREEPDB1)
 
 Si « Oracle » n’apparaît pas dans la liste, reconstruisez l’image Adminer avec OCI8 selon `adminer/Dockerfile` et
 assurez‑vous que l’architecture des ZIP Instant Client correspond à la plateforme de votre conteneur.
@@ -224,13 +282,13 @@ Entrées par défaut fournies:
 ORACLE_DB =
   (DESCRIPTION =
     (ADDRESS = (PROTOCOL = TCP)(HOST = oracle-db)(PORT = 1521))
-    (CONNECT_DATA = (SERVICE_NAME = ORACLE_DB))
+    (CONNECT_DATA = (SERVICE_NAME = FREEPDB1))
   )
 
 ORCL =
   (DESCRIPTION =
     (ADDRESS = (PROTOCOL = TCP)(HOST = oracle-db)(PORT = 1521))
-    (CONNECT_DATA = (SERVICE_NAME = ORACLE_DB))
+    (CONNECT_DATA = (SERVICE_NAME = FREEPDB1))
   )
 ```
 

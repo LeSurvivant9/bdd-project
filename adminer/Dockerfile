@@ -34,10 +34,20 @@ RUN mkdir -p /opt/oracle \
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_23_9:/lib
 ENV TNS_ADMIN=/opt/oracle/instantclient_23_9/network/admin
 
-# Installer l’extension oci8 via PECL
-# Le "echo instantclient,..." évite l’invite interactive pendant l’installation
-RUN echo "instantclient,/opt/oracle/instantclient_23_9" | pecl install oci8 \
- && docker-php-ext-enable oci8 \
- && apk del --no-network $PHPIZE_DEPS || true
+# Installer les deps de build puis l’extension, puis nettoyer
+RUN set -eux; \
+    if command -v apk >/dev/null 2>&1; then \
+        apk add --no-cache $PHPIZE_DEPS; \
+        echo "instantclient,/opt/oracle/instantclient_23_9" | pecl install oci8; \
+        docker-php-ext-enable oci8; \
+        apk del --no-network $PHPIZE_DEPS; \
+    else \
+        apt-get update; \
+        apt-get install -y --no-install-recommends $PHPIZE_DEPS; \
+        echo "instantclient,/opt/oracle/instantclient_23_9" | pecl install oci8; \
+        docker-php-ext-enable oci8; \
+        apt-get purge -y --auto-remove $PHPIZE_DEPS; \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
 
 USER adminer
