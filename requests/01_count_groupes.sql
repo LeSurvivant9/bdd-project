@@ -1,4 +1,4 @@
--- Exemple: nombre de groupes
+-- Ezxemple: nombre de groupes
 SELECT COUNT(*) AS nb_groupes FROM groupe;
 SELECT SUM(CASE WHEN id_groupe IS NOT NULL THEN 1 ELSE 0 END) AS nb_groupes FROM groupe;
 
