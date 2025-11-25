@@ -32,6 +32,10 @@ target-version = "py310"
 select = ["E", "F", "I"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+# Autoriser l'import non en tête de fichier dans ce script (nécessaire pour sys.path)
+"scripts/execute_requests.py" = ["E402"]
+
 [tool.ruff.lint.isort]
 # Treat local packages as first-party to group imports correctly.
 known-first-party = ["db"]

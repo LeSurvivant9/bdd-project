@@ -8,10 +8,6 @@ services:
     extends:
       file: postgres/docker-compose.yml
       service: postgres-db
-  adminer:
-    extends:
-      file: adminer/docker-compose.yml
-      service: adminer
 volumes:
   oracle-data:
   postgres-data:

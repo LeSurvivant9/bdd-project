@@ -147,19 +147,47 @@ class OracleManager(BaseDBManager):
     def execute_and_explain(
         self, sql: str, params: Optional[dict[str, Any]] = None
     ) -> QueryResult:
-        # Ask Oracle to gather execution stats, execute, then display last cursor plan
+        """
+        Execute the SQL and attempt to fetch the execution plan with runtime stats.
+
+        Preferred path:
+          - ALTER SESSION statistics_level=ALL
+          - DBMS_XPLAN.DISPLAY_CURSOR with 'ALLSTATS LAST' (reads V$ views)
+
+        Fallback (no special privileges needed):
+          - Use EXPLAIN PLAN + DBMS_XPLAN.DISPLAY() if access to V$ views is denied
+
+        This ensures we always return a plan, even for low-privilege users.
+        """
         rows: list[tuple] | None = None
         with self.engine.begin() as conn:
-            # Ensure statistics are collected for the executed statement
-            conn.exec_driver_sql("ALTER SESSION SET statistics_level = ALL")
+            # Always try to run the statement to also return rows when applicable
             res = conn.execute(text(sql), params or {})
             if res.returns_rows:
                 rows = [tuple(r) for r in res.fetchall()]
-            plan_rows = conn.exec_driver_sql(
-                "SELECT PLAN_TABLE_OUTPUT FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST'))"
-            ).fetchall()
-        plan = "\n".join(r[0] for r in plan_rows)
-        return QueryResult(rows=rows, plan=plan)
+
+            # Try high-fidelity plan first (may fail without privileges on V$ views)
+            try:
+                conn.exec_driver_sql("ALTER SESSION SET statistics_level = ALL")
+                plan_rows = conn.exec_driver_sql(
+                    "SELECT PLAN_TABLE_OUTPUT FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST'))"
+                ).fetchall()
+                plan = "\n".join(r[0] for r in plan_rows)
+                return QueryResult(rows=rows, plan=plan)
+            except Exception as exc:  # noqa: BLE001 — fall back if insufficient privileges
+                # Known privilege issues: ORA-01031 (insufficient privileges), ORA-00942 (table or view does not exist)
+                msg = str(exc).upper()
+                if "ORA-01031" not in msg and "ORA-00942" not in msg:
+                    # Not a privilege problem → re-raise
+                    raise
+
+                # Fallback: classic EXPLAIN PLAN (no runtime stats), available to regular users
+                conn.exec_driver_sql("EXPLAIN PLAN FOR " + sql, params or {})
+                plan_rows = conn.exec_driver_sql(
+                    "SELECT PLAN_TABLE_OUTPUT FROM TABLE(DBMS_XPLAN.DISPLAY())"
+                ).fetchall()
+                plan = "\n".join(r[0] for r in plan_rows)
+                return QueryResult(rows=rows, plan=plan)
 
 
 __all__ = [

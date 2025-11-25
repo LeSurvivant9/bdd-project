@@ -31,6 +31,24 @@ ORACLE_USERNAME=${ORACLE_USERNAME:-PDBADMIN}
 # Optional dedicated password for the application user; fallback to admin password if not provided
 ORACLE_PASSWORD=${ORACLE_PASSWORD:-${ORACLE_PASSWORD:-password}}
 
+# Control whether to grant execution plan privileges (DISPLAY_CURSOR related)
+# Default enabled unless explicitly disabled via env or CLI flag
+GRANT_XPLAN_PRIVS=${GRANT_XPLAN_PRIVS:-1}
+
+# Parse CLI flags
+for arg in "$@"; do
+  case "$arg" in
+    --no-xplan-grants)
+      GRANT_XPLAN_PRIVS=0
+      shift
+      ;;
+    --xplan-grants)
+      GRANT_XPLAN_PRIVS=1
+      shift
+      ;;
+  esac
+done
+
 if ! command -v docker >/dev/null 2>&1; then
   echo "[ERROR] docker is required but not found in PATH." >&2
   exit 1
@@ -139,6 +157,22 @@ GRANTS_SQL="$SET_PDB_SQL
 GRANT CREATE SESSION, CREATE TABLE, CREATE SEQUENCE, CREATE VIEW, CREATE TRIGGER, CREATE PROCEDURE TO ${ORACLE_USERNAME};
 /"
 run_sql "$GRANTS_SQL"
+
+# Optionally grant privileges to allow reading execution plans with runtime statistics
+if [[ "${GRANT_XPLAN_PRIVS}" == "1" ]]; then
+  echo "[INFO] Granting execution plan privileges (DISPLAY_CURSOR) to ${ORACLE_USERNAME}..."
+  XPLAN_GRANTS_SQL="$SET_PDB_SQL
+GRANT ALTER SESSION TO ${ORACLE_USERNAME};
+GRANT SELECT ON V_\$SESSION TO ${ORACLE_USERNAME};
+GRANT SELECT ON V_\$SQL TO ${ORACLE_USERNAME};
+GRANT SELECT ON V_\$SQL_PLAN TO ${ORACLE_USERNAME};
+GRANT SELECT ON V_\$SQL_PLAN_STATISTICS_ALL TO ${ORACLE_USERNAME};
+"
+  run_sql "$XPLAN_GRANTS_SQL"
+  echo "[OK] Granted DISPLAY_CURSOR-related privileges."
+else
+  echo "[INFO] Skipping execution plan privileges (flag --no-xplan-grants or GRANT_XPLAN_PRIVS=0)."
+fi
 
 # Migrate any existing objects for this user from SYSTEM to the target tablespace (USERS or APPDATA)
 MIGRATE_SQL="$SET_PDB_SQL
