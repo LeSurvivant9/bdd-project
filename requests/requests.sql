@@ -34,6 +34,7 @@ SELECT p.nom_partenaire, s.montant,
        RANK() OVER (PARTITION BY s.id_partenaire ORDER BY s.montant DESC) AS classement
 FROM sponsoring s
 JOIN partenaire p ON p.id_partenaire = s.id_partenaire;
+
 SELECT p.nom_partenaire, s1.montant,
        (SELECT COUNT(DISTINCT s2.montant)
           FROM sponsoring s2
@@ -44,7 +45,12 @@ JOIN partenaire p ON p.id_partenaire = s1.id_partenaire;
 
 SELECT c.date_concert, s.montant, SUM(s.montant) OVER (ORDER BY c.date_concert) AS cumul_sponsoring FROM concert c JOIN sponsoring s ON c.id_concert = s.id_concert;
 
-SELECT * FROM concert WHERE duree BETWEEN INTERVAL '01:00:00' HOUR TO SECOND AND INTERVAL '02:00:00' HOUR TO SECOND;
+SELECT * FROM concert
+WHERE duree
+BETWEEN INTERVAL '01:00:00' HOUR TO SECOND
+AND INTERVAL '02:00:00' HOUR TO SECOND;
+
+
 SELECT * FROM concert WHERE duree >= INTERVAL '01:00:00' HOUR TO SECOND AND duree <= INTERVAL '02:00:00' HOUR TO SECOND;
 
 SELECT * FROM concert WHERE date_concert BETWEEN DATE '2024-01-01' AND DATE '2024-12-31';
