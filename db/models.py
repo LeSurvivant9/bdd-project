@@ -6,6 +6,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    Identity,
     Integer,
     Interval,
     MetaData,
@@ -28,11 +29,16 @@ class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=naming_convention)
 
 
-# Groupe (IdGroupe, NomGroupe, Style, PaysOrigine, NbMembres)
 class Groupe(Base):
+    """
+    Represents a musical group with attributes such as name, style, origin country, and member count.
+    """
+
     __tablename__ = "groupe"
 
-    id_groupe: Mapped[int] = mapped_column("id_groupe", Integer, primary_key=True)
+    id_groupe: Mapped[int] = mapped_column(
+        "id_groupe", Integer, Identity(), primary_key=True
+    )
     nom_groupe: Mapped[str] = mapped_column("nom_groupe", String(255), nullable=False)
     style: Mapped[Optional[str]] = mapped_column(String(100))
     pays_origine: Mapped[Optional[str]] = mapped_column("pays_origine", String(100))
@@ -41,13 +47,16 @@ class Groupe(Base):
     concerts: Mapped[list[Concert]] = relationship(back_populates="groupe")
 
 
-# Scene (IdScene, NomScene, Emplacement, Capacite)
-
-
 class Scene(Base):
+    """
+    Represents a concert venue with attributes such as name, location, and capacity.
+    """
+
     __tablename__ = "scene"
 
-    id_scene: Mapped[int] = mapped_column("id_scene", Integer, primary_key=True)
+    id_scene: Mapped[int] = mapped_column(
+        "id_scene", Integer, Identity(), primary_key=True
+    )
     nom_scene: Mapped[str] = mapped_column("nom_scene", String(255), nullable=False)
     emplacement: Mapped[Optional[str]] = mapped_column(String(255))
     capacite: Mapped[Optional[int]] = mapped_column(Integer)
@@ -55,13 +64,16 @@ class Scene(Base):
     concerts: Mapped[list[Concert]] = relationship(back_populates="scene")
 
 
-# Concert (IdConcert, DateConcert, HeureDebut, Duree, #IdScene, #IdGroupe)
-
-
 class Concert(Base):
+    """
+    Represents a concert event with attributes such as date, start time, duration, venue, and associated group.
+    """
+
     __tablename__ = "concert"
 
-    id_concert: Mapped[int] = mapped_column("id_concert", Integer, primary_key=True)
+    id_concert: Mapped[int] = mapped_column(
+        "id_concert", Integer, Identity(), primary_key=True
+    )
     date_concert: Mapped[Optional[Date]] = mapped_column("date_concert", Date)
     heure_debut: Mapped[Optional[DateTime]] = mapped_column("heure_debut", DateTime)
     duree: Mapped[Optional[Interval]] = mapped_column(Interval, nullable=True)
@@ -85,26 +97,11 @@ class Concert(Base):
     sponsorings: Mapped[list[Sponsoring]] = relationship(back_populates="concert")
 
 
-# Benevole (IdBenevole, Nom, Prenom, Telephone, Email, Poste)
-
-
-class Benevole(Base):
-    __tablename__ = "benevole"
-
-    id_benevole: Mapped[int] = mapped_column("id_benevole", Integer, primary_key=True)
-    nom: Mapped[str] = mapped_column(String(100), nullable=False)
-    prenom: Mapped[str] = mapped_column(String(100), nullable=False)
-    telephone: Mapped[Optional[str]] = mapped_column(String(50))
-    email: Mapped[Optional[str]] = mapped_column(String(255))
-    poste: Mapped[Optional[str]] = mapped_column(String(100))
-
-    affectations: Mapped[list[Affectation]] = relationship(back_populates="benevole")
-
-
-# Affectation (#IdBenevole, #IdConcert, Role)
-
-
 class Affectation(Base):
+    """
+    Represents an assignment of a benevole to a concert with a specific role.
+    """
+
     __tablename__ = "affectation"
 
     id_benevole: Mapped[int] = mapped_column(
@@ -125,14 +122,34 @@ class Affectation(Base):
     concert: Mapped[Concert] = relationship(back_populates="affectations")
 
 
-# Partenaire (IdPartenaire, NomPartenaire, TypePartenaire)
+class Benevole(Base):
+    """
+    Represents a benevole with attributes such as name, phone, email, and position.
+    """
+
+    __tablename__ = "benevole"
+
+    id_benevole: Mapped[int] = mapped_column(
+        "id_benevole", Integer, Identity(), primary_key=True
+    )
+    nom: Mapped[str] = mapped_column(String(100), nullable=False)
+    prenom: Mapped[str] = mapped_column(String(100), nullable=False)
+    telephone: Mapped[Optional[str]] = mapped_column(String(50))
+    email: Mapped[Optional[str]] = mapped_column(String(255))
+    poste: Mapped[Optional[str]] = mapped_column(String(100))
+
+    affectations: Mapped[list[Affectation]] = relationship(back_populates="benevole")
 
 
 class Partenaire(Base):
+    """
+    Represents a sponsor with attributes such as name and type.
+    """
+
     __tablename__ = "partenaire"
 
     id_partenaire: Mapped[int] = mapped_column(
-        "id_partenaire", Integer, primary_key=True
+        "id_partenaire", Integer, Identity(), primary_key=True
     )
     nom_partenaire: Mapped[str] = mapped_column(
         "nom_partenaire", String(255), nullable=False
@@ -144,10 +161,11 @@ class Partenaire(Base):
     sponsorings: Mapped[list[Sponsoring]] = relationship(back_populates="partenaire")
 
 
-# Sponsoring (#IdPartenaire, #IdConcert, Montant)
-
-
 class Sponsoring(Base):
+    """
+    Represents a sponsorship relationship between a sponsor and a concert with an associated amount.
+    """
+
     __tablename__ = "sponsoring"
 
     id_partenaire: Mapped[int] = mapped_column(
